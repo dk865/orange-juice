@@ -9,6 +9,8 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.Text,
 		C3.Behaviors.Flash,
 		C3.Plugins.DrawingCanvas,
+		C3.Behaviors.Fade,
+		C3.Plugins.TiledBg,
 		C3.Plugins.System.Cnds.OnLayoutStart,
 		C3.Plugins.System.Acts.SetTimescale,
 		C3.Plugins.System.Acts.SetObjectTimescale,
@@ -38,9 +40,10 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.Sprite.Exps.Y,
 		C3.Plugins.Sprite.Exps.Angle,
 		C3.Plugins.System.Exps.layoutheight,
-		C3.Plugins.System.Cnds.Else,
 		C3.Plugins.Sprite.Exps.AnimationName,
+		C3.Plugins.System.Cnds.CompareVar,
 		C3.Plugins.Sprite.Acts.Destroy,
+		C3.Plugins.System.Cnds.Else,
 		C3.Plugins.Touch.Exps.X,
 		C3.Plugins.Touch.Exps.Y,
 		C3.Plugins.Touch.Cnds.HasNthTouch,
@@ -64,7 +67,9 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.System.Acts.RestartLayout,
 		C3.Plugins.Text.Acts.SetText,
 		C3.Plugins.System.Exps.zeropad,
-		C3.Plugins.System.Acts.SetFunctionReturnValue
+		C3.Plugins.System.Acts.SetFunctionReturnValue,
+		C3.Plugins.System.Acts.AddVar,
+		C3.Plugins.Text.Acts.SetAngle
 	];
 };
 self.C3_JsPropNameTable = [
@@ -90,6 +95,9 @@ self.C3_JsPropNameTable = [
 	{DrawingCanvas: 0},
 	{SliceText: 0},
 	{Door: 0},
+	{Fade: 0},
+	{strike_info: 0},
+	{Strike: 0},
 	{FirstInteraction: 0},
 	{DOUBLESPAWNRATE: 0},
 	{BOMBSPAWNRATE: 0},
@@ -122,5 +130,7 @@ self.InstanceType = {
 	FireParticles: class extends self.IParticlesInstance {},
 	DrawingCanvas: class extends self.IDrawingCanvasInstance {},
 	SliceText: class extends self.ITextInstance {},
-	Door: class extends self.ISpriteInstance {}
+	Door: class extends self.ISpriteInstance {},
+	strike_info: class extends self.ITextInstance {},
+	Fade: class extends self.ITiledBackgroundInstance {}
 }
