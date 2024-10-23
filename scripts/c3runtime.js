@@ -4180,36 +4180,6 @@ err)}}};
 // scripts/shaders.js
 {
 self["C3_Shaders"] = {};
-self["C3_Shaders"]["hsladjust"] = {
-	glsl: "varying mediump vec2 vTex;\nuniform lowp sampler2D samplerFront;\nprecision mediump float;\nuniform float huerotate;\nuniform float satadjust;\nuniform float lumadjust;\nvec3 rgb_to_hsl(vec3 color)\n{\nvec3 hsl = vec3(0.0, 0.0, 0.0);\nfloat fmin = min(min(color.r, color.g), color.b);\nfloat fmax = max(max(color.r, color.g), color.b);\nfloat delta = fmax - fmin;\nhsl.z = (fmax + fmin) / 2.0;\nif (delta == 0.0)\n{\nhsl.x = 0.0;\nhsl.y = 0.0;\n}\nelse\n{\nif (hsl.z < 0.5)\nhsl.y = delta / (fmax + fmin);\nelse\nhsl.y = delta / (2.0 - fmax - fmin);\nfloat dR = (((fmax - color.r) / 6.0) + (delta / 2.0)) / delta;\nfloat dG = (((fmax - color.g) / 6.0) + (delta / 2.0)) / delta;\nfloat dB = (((fmax - color.b) / 6.0) + (delta / 2.0)) / delta;\nif (color.r == fmax)\nhsl.x = dB - dG;\nelse if (color.g == fmax)\nhsl.x = (1.0 / 3.0) + dR - dB;\nelse if (color.b == fmax)\nhsl.x = (2.0 / 3.0) + dG - dR;\nif (hsl.x < 0.0)\nhsl.x += 1.0;\nelse if (hsl.x > 1.0)\nhsl.x -= 1.0;\n}\nreturn hsl;\n}\nfloat hue_to_rgb(float f1, float f2, float hue)\n{\nif (hue < 0.0)\nhue += 1.0;\nelse if (hue > 1.0)\nhue -= 1.0;\nfloat ret;\nif ((6.0 * hue) < 1.0)\nret = f1 + (f2 - f1) * 6.0 * hue;\nelse if ((2.0 * hue) < 1.0)\nret = f2;\nelse if ((3.0 * hue) < 2.0)\nret = f1 + (f2 - f1) * ((2.0 / 3.0) - hue) * 6.0;\nelse\nret = f1;\nreturn ret;\n}\nvec3 hsl_to_rgb(vec3 hsl)\n{\nvec3 rgb = vec3(hsl.z);\nif (hsl.y != 0.0)\n{\nfloat f2;\nif (hsl.z < 0.5)\nf2 = hsl.z * (1.0 + hsl.y);\nelse\nf2 = (hsl.z + hsl.y) - (hsl.y * hsl.z);\nfloat f1 = 2.0 * hsl.z - f2;\nrgb.r = hue_to_rgb(f1, f2, hsl.x + (1.0 / 3.0));\nrgb.g = hue_to_rgb(f1, f2, hsl.x);\nrgb.b = hue_to_rgb(f1, f2, hsl.x - (1.0 / 3.0));\n}\nreturn rgb;\n}\nvoid main(void)\n{\nvec4 front = texture2D(samplerFront, vTex);\nvec3 rgb = rgb_to_hsl(front.rgb) + vec3((huerotate > 0.5 ? huerotate - 1.0 : huerotate), 0, (lumadjust - 1.0) * front.a);\nrgb.y *= satadjust;\nrgb = hsl_to_rgb(rgb);\ngl_FragColor = vec4(rgb, front.a);\n}",
-	glslWebGL2: "",
-	wgsl: "%%SAMPLERFRONT_BINDING%% var samplerFront : sampler;\n%%TEXTUREFRONT_BINDING%% var textureFront : texture_2d<f32>;\nstruct ShaderParams {\nhuerotate : f32,\nsatadjust : f32,\nlumadjust : f32\n};\n%%SHADERPARAMS_BINDING%% var<uniform> shaderParams : ShaderParams;\n%%C3_UTILITY_FUNCTIONS%%\n%%FRAGMENTINPUT_STRUCT%%\n%%FRAGMENTOUTPUT_STRUCT%%\n@fragment\nfn main(input : FragmentInput) -> FragmentOutput\n{\nvar front : vec4<f32> = textureSample(textureFront, samplerFront, input.fragUV);\nvar huerotate : f32 = shaderParams.huerotate;\nif (huerotate > 0.5)\n{\nhuerotate = huerotate - 1.0;\n}\nvar rgb : vec3<f32> = c3_RGBtoHSL(front.rgb) + vec3<f32>(huerotate, 0.0, (shaderParams.lumadjust - 1.0) * front.a);\nrgb.y = rgb.y * shaderParams.satadjust;\nrgb = c3_HSLtoRGB(rgb);\nvar output : FragmentOutput;\noutput.color = vec4<f32>(rgb, front.a);\nreturn output;\n}",
-	blendsBackground: false,
-	usesDepth: false,
-	extendBoxHorizontal: 0,
-	extendBoxVertical: 0,
-	crossSampling: false,
-	mustPreDraw: false,
-	preservesOpaqueness: true,
-	supports3dDirectRendering: false,
-	animated: false,
-	parameters: [["huerotate",0,"percent"],["satadjust",0,"percent"],["lumadjust",0,"percent"]]
-};
-self["C3_Shaders"]["colorblend"] = {
-	glsl: "varying mediump vec2 vTex;\nuniform lowp sampler2D samplerFront;\nuniform mediump vec2 srcStart;\nuniform mediump vec2 srcEnd;\nuniform lowp sampler2D samplerBack;\nuniform mediump vec2 destStart;\nuniform mediump vec2 destEnd;\nprecision mediump float;\nvec3 rgb_to_hsl(vec3 color)\n{\nvec3 hsl = vec3(0.0, 0.0, 0.0);\nfloat fmin = min(min(color.r, color.g), color.b);\nfloat fmax = max(max(color.r, color.g), color.b);\nfloat delta = fmax - fmin;\nhsl.z = (fmax + fmin) / 2.0;\nif (delta == 0.0)\n{\nhsl.x = 0.0;\nhsl.y = 0.0;\n}\nelse\n{\nif (hsl.z < 0.5)\nhsl.y = delta / (fmax + fmin);\nelse\nhsl.y = delta / (2.0 - fmax - fmin);\nfloat dR = (((fmax - color.r) / 6.0) + (delta / 2.0)) / delta;\nfloat dG = (((fmax - color.g) / 6.0) + (delta / 2.0)) / delta;\nfloat dB = (((fmax - color.b) / 6.0) + (delta / 2.0)) / delta;\nif (color.r == fmax)\nhsl.x = dB - dG;\nelse if (color.g == fmax)\nhsl.x = (1.0 / 3.0) + dR - dB;\nelse if (color.b == fmax)\nhsl.x = (2.0 / 3.0) + dG - dR;\nif (hsl.x < 0.0)\nhsl.x += 1.0;\nelse if (hsl.x > 1.0)\nhsl.x -= 1.0;\n}\nreturn hsl;\n}\nfloat hue_to_rgb(float f1, float f2, float hue)\n{\nif (hue < 0.0)\nhue += 1.0;\nelse if (hue > 1.0)\nhue -= 1.0;\nfloat ret;\nif ((6.0 * hue) < 1.0)\nret = f1 + (f2 - f1) * 6.0 * hue;\nelse if ((2.0 * hue) < 1.0)\nret = f2;\nelse if ((3.0 * hue) < 2.0)\nret = f1 + (f2 - f1) * ((2.0 / 3.0) - hue) * 6.0;\nelse\nret = f1;\nreturn ret;\n}\nvec3 hsl_to_rgb(vec3 hsl)\n{\nvec3 rgb = vec3(hsl.z);\nif (hsl.y != 0.0)\n{\nfloat f2;\nif (hsl.z < 0.5)\nf2 = hsl.z * (1.0 + hsl.y);\nelse\nf2 = (hsl.z + hsl.y) - (hsl.y * hsl.z);\nfloat f1 = 2.0 * hsl.z - f2;\nrgb.r = hue_to_rgb(f1, f2, hsl.x + (1.0 / 3.0));\nrgb.g = hue_to_rgb(f1, f2, hsl.x);\nrgb.b = hue_to_rgb(f1, f2, hsl.x - (1.0 / 3.0));\n}\nreturn rgb;\n}\nvoid main(void)\n{\nvec4 front = texture2D(samplerFront, vTex);\nvec3 fronthsl = rgb_to_hsl(front.rgb / front.a);\nmediump vec2 tex = (vTex - srcStart) / (srcEnd - srcStart);\nvec4 back = texture2D(samplerBack, mix(destStart, destEnd, tex));\nvec3 backhsl = rgb_to_hsl(back.rgb / back.a);\nfronthsl = hsl_to_rgb(vec3(fronthsl.x, fronthsl.y, backhsl.z));\nfronthsl *= front.a;\ngl_FragColor = vec4(fronthsl.r, fronthsl.g, fronthsl.b, front.a) * back.a;\n}",
-	glslWebGL2: "",
-	wgsl: "%%SAMPLERFRONT_BINDING%% var samplerFront : sampler;\n%%TEXTUREFRONT_BINDING%% var textureFront : texture_2d<f32>;\n%%SAMPLERBACK_BINDING%% var samplerBack : sampler;\n%%TEXTUREBACK_BINDING%% var textureBack : texture_2d<f32>;\n%%C3_UTILITY_FUNCTIONS%%\n%%FRAGMENTINPUT_STRUCT%%\n%%FRAGMENTOUTPUT_STRUCT%%\n@fragment\nfn main(input : FragmentInput) -> FragmentOutput\n{\nvar front : vec4<f32> = c3_unpremultiply(textureSample(textureFront, samplerFront, input.fragUV));\nvar fronthsl : vec3<f32> = c3_RGBtoHSL(front.rgb);\nvar back : vec4<f32> = c3_unpremultiply(textureSample(textureBack, samplerBack, c3_getBackUV(input.fragPos.xy, textureBack)));\nvar backhsl : vec3<f32> = c3_RGBtoHSL(back.rgb);\nvar output : FragmentOutput;\noutput.color = vec4<f32>(\nc3_HSLtoRGB(vec3<f32>(fronthsl.x, fronthsl.y, backhsl.z)) * front.a,\nfront.a\n) * back.a;\nreturn output;\n}",
-	blendsBackground: true,
-	usesDepth: false,
-	extendBoxHorizontal: 0,
-	extendBoxVertical: 0,
-	crossSampling: false,
-	mustPreDraw: false,
-	preservesOpaqueness: false,
-	supports3dDirectRendering: false,
-	animated: false,
-	parameters: []
-};
 
 }
 
@@ -4579,102 +4549,6 @@ index);return ret?ret.x:0},TagY(tag,index){const ret=this._GetTagPosition(tag,in
 
 }
 
-// scripts/plugins/DrawingCanvas/c3runtime/runtime.js
-{
-'use strict';{const C3=self.C3;C3.Plugins.DrawingCanvas=class DrawingCanvasPlugin extends C3.SDKPluginBase{constructor(opts){super(opts)}Release(){super.Release()}}}{const C3=self.C3;C3.Plugins.DrawingCanvas.Type=class DrawingCanvasType extends C3.SDKTypeBase{constructor(objectClass){super(objectClass)}Release(){super.Release()}OnCreate(){}}}
-{const C3=self.C3;const C3X=self.C3X;const RESOLUTION_MODE=0;const INITIALLY_VISIBLE=1;const ORIGIN=2;const MULTISAMPLING=3;const tempColor=C3.New(C3.Color);const tempColor2=C3.New(C3.Color);const tempRect=C3.New(C3.Rect);const tempQuad=C3.New(C3.Quad);function ClonePolyArray(arr){return arr.map(p=>p.slice(0))}function SortByInstanceZIndex(a,b){return a.GetWorldInfo().GetZIndex()-b.GetWorldInfo().GetZIndex()}let drawDepth=0;C3.Plugins.DrawingCanvas.Instance=class DrawingCanvasInstance extends C3.SDKWorldInstanceBase{constructor(inst,
-properties){super(inst);this._renderTarget=null;this._rcTex=C3.New(C3.Rect);const wi=this.GetWorldInfo();this._isFixedResolution=false;this._fixedResolutionWidth=Math.floor(wi.GetWidth());this._fixedResolutionHeight=Math.floor(wi.GetHeight());this._multisampling=0;this._texRenderTarget=null;this._drawCommands=[];this._currentPoly=[];this._drawBlendMode=0;this._drawScale=1;this._texScale=1;this._lineDashTexture=null;this._savedImageUrl="";this._snapshot=null;this._tempRect=C3.New(C3.Rect);this._deviceQuadUnrotated=
-C3.New(C3.Quad);this._deviceQuadRotated=C3.New(C3.Quad);if(properties){this._isFixedResolution=properties[RESOLUTION_MODE]===1;wi.SetVisible(!!properties[INITIALLY_VISIBLE]);this._multisampling=[0,2,4,8][properties[MULTISAMPLING]]}const renderer=this._runtime.GetRenderer();this._SetDrawingBlendMode(0);if(renderer.IsWebGL()&&renderer.GetWebGLVersionNumber()<2)this._multisampling=0;this._StartTicking2()}Release(){if(this._renderTarget){this._renderTarget.GetRenderer().DeleteRenderTarget(this._renderTarget);
-this._renderTarget=null}if(this._texRenderTarget){this._texRenderTarget.GetRenderer().DeleteRenderTarget(this._texRenderTarget);this._texRenderTarget=null}C3.clearArray(this._drawCommands);super.Release()}IsFixedResolutionMode(){return this._isFixedResolution}_GetLineDashTexture(){this._MaybeCreateLineDashTexture();return this._lineDashTexture}_MaybeCreateLineDashTexture(){if(this._lineDashTexture)return;const canvas=C3.CreateCanvas(512,8);const ctx=canvas.getContext("2d");ctx.clearRect(0,0,512,8);
-ctx.fillStyle="white";ctx.fillRect(0,0,256,8);this._lineDashTexture=this._runtime.GetRenderer().CreateStaticTexture(canvas,{wrapX:"repeat",sampling:this._runtime.GetSampling()})}_SetDrawingBlendMode(bm){this._drawBlendMode=bm}_ApplyCurrentDrawingBlendMode(renderer){renderer.SetBlendMode(this._drawBlendMode)}_AddDrawCommand(cmd){this._drawCommands.push(cmd);this._runtime.UpdateRender()}_SetFixedResolutionMode(fixedWidth,fixedHeight){this._isFixedResolution=true;this._fixedResolutionWidth=Math.floor(fixedWidth);
-this._fixedResolutionHeight=Math.floor(fixedHeight)}_SetAutoResolutionMode(){this._isFixedResolution=false}_ClearCanvas(color){C3.clearArray(this._drawCommands);this._AddDrawCommand(new C3.Plugins.DrawingCanvas.DrawCommand.ClearCanvas(color))}_ClearRect(left,top,right,bottom,color){if(left===right||top===bottom)return;this._AddDrawCommand(new C3.Plugins.DrawingCanvas.DrawCommand.ClearRect(left,top,right,bottom,color))}_FillRect(left,top,right,bottom,color){if(left===right||top===bottom)return;this._AddDrawCommand(new C3.Plugins.DrawingCanvas.DrawCommand.FillRect(left,
-top,right,bottom,color))}_FillLinearGradient(left,top,right,bottom,color1,color2,dir){if(left===right||top===bottom)return;this._AddDrawCommand(new C3.Plugins.DrawingCanvas.DrawCommand.FillLinearGradient(left,top,right,bottom,color1,color2,dir))}_FillEllipse(x,y,radiusX,radiusY,color,isSmooth){if(radiusX<=0||radiusY<=0)return;this._AddDrawCommand(new C3.Plugins.DrawingCanvas.DrawCommand.FillEllipse(x,y,radiusX,radiusY,color,isSmooth))}_OutlineEllipse(x,y,radiusX,radiusY,color,thickness,isSmooth){if(radiusX<=
-0||radiusY<=0||thickness<=0)return;this._AddDrawCommand(new C3.Plugins.DrawingCanvas.DrawCommand.OutlineEllipse(x,y,radiusX,radiusY,color,thickness,isSmooth))}_OutlineRect(left,top,right,bottom,color,thickness){if(left===right||top===bottom||thickness<=0)return;this._AddDrawCommand(new C3.Plugins.DrawingCanvas.DrawCommand.OutlineRect(left,top,right,bottom,color,thickness))}_Line(x1,y1,x2,y2,color,thickness,capStr){if(x1===x2&&y1===y2||thickness<=0)return;this._AddDrawCommand(new C3.Plugins.DrawingCanvas.DrawCommand.Line(x1,
-y1,x2,y2,color,thickness,capStr))}_LineDashed(x1,y1,x2,y2,color,thickness,dashLength,capStr){if(x1===x2&&y1===y2||thickness<=0||dashLength<=0)return;const dashTex=this._GetLineDashTexture();this._AddDrawCommand(new C3.Plugins.DrawingCanvas.DrawCommand.LineDashed(x1,y1,x2,y2,color,thickness,dashLength,dashTex,capStr))}_LinePoly(polyArr,color,thickness,capStr){if(polyArr.length<2||thickness<=0)return;this._AddDrawCommand(new C3.Plugins.DrawingCanvas.DrawCommand.LinePoly(ClonePolyArray(polyArr),color,
-thickness,capStr))}_LineDashedPoly(polyArr,color,thickness,dashLength,capStr){if(polyArr.length<2||thickness<=0||dashLength<=0)return;const dashTex=this._GetLineDashTexture();this._AddDrawCommand(new C3.Plugins.DrawingCanvas.DrawCommand.LineDashedPoly(ClonePolyArray(polyArr),color,thickness,dashLength,dashTex,capStr))}_FillPoly(polyArr,color,isConvex){if(polyArr.length<3)return;this._AddDrawCommand(new C3.Plugins.DrawingCanvas.DrawCommand.FillPoly(ClonePolyArray(polyArr),color,isConvex))}_SetDrawBlend(blendMode){this._AddDrawCommand(new C3.Plugins.DrawingCanvas.DrawCommand.SetDrawBlend(blendMode))}_PasteInstances(instanceArr,
-includeFx){const myWi=this.GetWorldInfo();const myBbox=myWi.GetBoundingBox();const myQuad=myWi.GetBoundingQuad();const instances=instanceArr.filter(inst=>{const instWi=inst.GetWorldInfo();return instWi&&myBbox.intersectsRect(instWi.GetBoundingBox())&&(myWi.GetAngle()===0||myQuad.intersectsQuad(instWi.GetBoundingQuad()))});if(instances.length===0)return;instances.sort(SortByInstanceZIndex);let resolve=null;const ret=new Promise(r=>resolve=r);this._AddDrawCommand(new C3.Plugins.DrawingCanvas.DrawCommand.DrawInstances(instances,
-includeFx,myWi,resolve));return ret}_GetPixelScale(){return 1/(this._drawScale*this._texScale)}_UpdateRenderTargetSize(renderer,rtWidth,rtHeight){if(this._renderTarget)renderer.DeleteRenderTarget(this._renderTarget);this._renderTarget=renderer.CreateRenderTarget({width:rtWidth,height:rtHeight,sampling:this._runtime.GetSampling(),isSampled:this._multisampling===0,canReadPixels:this._multisampling===0,canUpdate:this._multisampling===0,multisampling:this._multisampling});if(this._multisampling>0){if(this._texRenderTarget)renderer.DeleteRenderTarget(this._texRenderTarget);
-this._texRenderTarget=renderer.CreateRenderTarget({width:rtWidth,height:rtHeight,sampling:this._runtime.GetSampling(),isSampled:true,canReadPixels:true,canUpdate:true})}renderer.SetTexture(null)}_GetRenderTarget(){return this._renderTarget}_GetTexRenderTarget(){return this._texRenderTarget}GetMultisampling(){return this._multisampling}_SetRenderTargetDeviceTransform(renderer){this._runtime.GetCanvasManager().SetDeviceTransform(renderer,this._renderTarget.GetWidth(),this._renderTarget.GetHeight(),
-false)}HasAnyDrawingCommandInQueue(){return this._drawCommands.some(c=>!(c instanceof C3.Plugins.DrawingCanvas.DrawCommand.SaveImage))}_CalculateUnrotatedDeviceCoords(outRect,outQuad){const wi=this.GetWorldInfo();const layer=wi.GetLayer();const layout=layer.GetLayout();const angle=wi.GetAngle();const layerAngle=layer.GetOwnAngle();const layoutAngle=layout.GetAngle();if(angle!==0||layerAngle!==0||layoutAngle!==0){layout.SetAngle(0);layer.SetAngle(0);wi.SetAngle(0);wi.SetBboxChanged()}const quad=wi.GetBoundingQuad();
-const [dl,dt]=layer.LayerToDrawSurface(quad.getTlx(),quad.getTly());const [dr,db]=layer.LayerToDrawSurface(quad.getBrx(),quad.getBry());const offX=dl-Math.round(dl);const offY=dt-Math.round(dt);outRect.set(dl,dt,dr,db);outRect.offset(-offX,-offY);outRect.normalize();outQuad.setFromRect(outRect);if(angle!==0||layerAngle!==0||layoutAngle!==0){layout.SetAngle(layoutAngle);layer.SetAngle(layerAngle);wi.SetAngle(angle);wi.SetBboxChanged()}}_CalculateRotatedDeviceCoords(outQuad){const wi=this.GetWorldInfo();
-const layer=wi.GetLayer();const layout=layer.GetLayout();const layerAngle=layer.GetOwnAngle();const layoutAngle=layout.GetAngle();if(layerAngle!==0||layoutAngle!==0){layout.SetAngle(0);layer.SetAngle(0)}const quad=wi.GetBoundingQuad();const [dtlx,dtly]=layer.LayerToDrawSurface(quad.getTlx(),quad.getTly());const [dtrx,dtry]=layer.LayerToDrawSurface(quad.getTrx(),quad.getTry());const [dbrx,dbry]=layer.LayerToDrawSurface(quad.getBrx(),quad.getBry());const [dblx,dbly]=layer.LayerToDrawSurface(quad.getBlx(),
-quad.getBly());const offX=dtlx-Math.round(dtlx);const offY=dtly-Math.round(dtly);outQuad.set(dtlx,dtly,dtrx,dtry,dbrx,dbry,dblx,dbly);outQuad.offset(offX,offY);if(layerAngle!==0||layoutAngle!==0){layout.SetAngle(layoutAngle);layer.SetAngle(layerAngle)}}_CalculateSurfaceDeviceSize(){const renderer=this._runtime.GetRenderer();const tempRect=this._tempRect;this._CalculateUnrotatedDeviceCoords(tempRect,this._deviceQuadUnrotated);this._CalculateRotatedDeviceCoords(this._deviceQuadRotated);let rtWidth=
-0;let rtHeight=0;if(this._isFixedResolution){rtWidth=this._fixedResolutionWidth;rtHeight=this._fixedResolutionHeight;if(renderer.IsWebGL())this._rcTex.set(0,1,1,0);else this._rcTex.set(0,0,1,1)}else{if(this.GetWorldInfo().GetLayer().RendersIn3DMode())this._deviceQuadRotated.getBoundingBox(tempRect);const EPSILON=.001;rtWidth=Math.ceil(tempRect.width()+EPSILON);rtHeight=Math.ceil(tempRect.height()+EPSILON);if(renderer.IsWebGL())this._rcTex.set(0,1,tempRect.width()/rtWidth,1-tempRect.height()/rtHeight);
-else this._rcTex.set(0,0,tempRect.width()/rtWidth,tempRect.height()/rtHeight)}const maxTextureSize=renderer.GetMaxTextureSize();const maxRtDim=Math.max(rtWidth,rtHeight);if(maxRtDim>maxTextureSize){this._texScale=maxTextureSize/maxRtDim;rtWidth=Math.round(rtWidth*this._texScale);rtHeight=Math.round(rtHeight*this._texScale)}else this._texScale=1;return[rtWidth,rtHeight]}_OnResolutionChanged(){this.DispatchScriptEvent("resolutionchange");this.Trigger(C3.Plugins.DrawingCanvas.Cnds.OnResolutionChanged)}_MaybeCreateRenderTarget(){if(this._renderTarget)return;
-const [rtWidth,rtHeight]=this._CalculateSurfaceDeviceSize();if(rtWidth<=0||rtHeight<=0)return;this._drawScale=tempRect.width()/this.GetWorldInfo().GetWidth();this._UpdateRenderTargetSize(this._runtime.GetRenderer(),rtWidth,rtHeight);this._OnResolutionChanged()}Tick2(){const renderer=this._runtime.GetRenderer();const wi=this.GetWorldInfo();const tempRect=this._tempRect;++drawDepth;const [rtWidth,rtHeight]=this._CalculateSurfaceDeviceSize();if(rtWidth<=0||rtHeight<=0){--drawDepth;return}this._drawScale=
-this._isFixedResolution?1:tempRect.width()/wi.GetWidth();const drawScale=this._drawScale*this._texScale;const didRenderTargetChange=!this._renderTarget||this._renderTarget.GetWidth()!==rtWidth||this._renderTarget.GetHeight()!==rtHeight;if(didRenderTargetChange)this._OnResolutionChanged();if(this._drawCommands.length>0||!this._renderTarget){if(!this._renderTarget||didRenderTargetChange&&this.HasAnyDrawingCommandInQueue())this._UpdateRenderTargetSize(renderer,rtWidth,rtHeight);renderer.SetRenderTarget(this._renderTarget);
-this._SetRenderTargetDeviceTransform(renderer);this._ApplyCurrentDrawingBlendMode(renderer);if(renderer.IsWebGPU()&&this._multisampling>0)renderer.SetRenderingToMultisampleCount(this._multisampling);for(const dc of this._drawCommands)dc.Do(renderer,drawScale,this);C3.clearArray(this._drawCommands);renderer.SetAlphaBlend();if(renderer.IsWebGPU()&&this._multisampling>0)renderer.SetRenderingToMultisampleCount(0);if(this._multisampling>0){renderer.SetRenderTarget(this._texRenderTarget);renderer.CopyRenderTarget(this._renderTarget,
-"crop")}}--drawDepth}Draw(renderer){const wi=this.GetWorldInfo();const layer=wi.GetLayer();const canvasManager=this._runtime.GetCanvasManager();const lastRenderTarget=renderer.GetRenderTarget();let quad=this._deviceQuadUnrotated;if(!this._renderTarget)return;if(renderer.IsWebGPU())renderer._MaybeDoPendingClearRenderPass(this._renderTarget);if(this._multisampling===0)renderer.SetTexture(this._renderTarget.GetTexture());else renderer.SetTexture(this._texRenderTarget.GetTexture());let didChangeTransform=
-false;if(drawDepth>0)if(this._inst._IsDrawingWithEffects())quad=wi.GetBoundingQuad();else{canvasManager.SetDeviceTransform(renderer,lastRenderTarget.GetWidth(),lastRenderTarget.GetHeight(),false);didChangeTransform=true;quad=this._deviceQuadRotated}else if(wi.GetAngle()===0&&layer.GetAngle()===0&&wi.GetTotalZElevation()===0&&!wi.HasMesh()&&layer.RendersIn2DMode()){canvasManager.SetDeviceTransform(renderer);didChangeTransform=true}else quad=wi.GetBoundingQuad();if(wi.HasMesh())this._DrawMesh(renderer,
-wi);else renderer.Quad3(quad,this._rcTex);if(didChangeTransform)layer._SetTransform(renderer,false);renderer.SetTexture(null)}_DrawMesh(renderer,wi){const transformedMesh=wi.GetTransformedMesh();if(wi.IsMeshChanged()){wi.CalculateBbox(tempRect,tempQuad,false);transformedMesh.CalculateTransformedMesh(wi.GetSourceMesh(),tempQuad,this._rcTex);wi.SetMeshChanged(false)}transformedMesh.Draw(renderer)}GetSnapshotPixel(x,y){if(!this._snapshot)return[0,0,0,0];const width=this._snapshot.width;const height=
-this._snapshot.height;x=Math.floor(x);if(this._runtime.GetRenderer().IsWebGL())y=height-1-Math.floor(y);else y=Math.floor(y);if(x<0||y<0||x>=width||y>=height)return[0,0,0,0];const data=this._snapshot.data;const ptr=y*width*4+x*4;let r=data[ptr]/255;let g=data[ptr+1]/255;let b=data[ptr+2]/255;let a=data[ptr+3]/255;if(a!==0){r/=a;g/=a;b/=a}return[r*100,g*100,b*100,a*100]}SetSnapshotPixel(x,y,rgb){if(!this._snapshot)return[0,0,0,0];tempColor.setFromRgbValue(rgb);tempColor.premultiply();const width=this._snapshot.width;
-const height=this._snapshot.height;x=Math.floor(x);y=height-1-Math.floor(y);if(x<0||y<0||x>=width||y>=height)return;const data=this._snapshot.data;const ptr=y*width*4+x*4;data[ptr]=Math.floor(tempColor.getR()*255);data[ptr+1]=Math.floor(tempColor.getG()*255);data[ptr+2]=Math.floor(tempColor.getB()*255);data[ptr+3]=Math.floor(tempColor.getA()*255)}GetImagePixelData(){return new Promise(resolve=>{this._AddDrawCommand(new C3.Plugins.DrawingCanvas.DrawCommand.SaveImage(async imageData=>{const imgDataBuffer=
-imageData.data.buffer;const width=imageData.width;const height=imageData.height;const processedBuffer=await this._runtime.AddJob("ProcessImageData",{"buffer":imgDataBuffer,"width":width,"height":height,"unpremultiply":true,"flipY":this._runtime.GetRenderer().IsWebGL()},[imgDataBuffer]);resolve(new ImageData(new Uint8ClampedArray(processedBuffer),width,height))}))})}LoadImagePixelData(imageData,premultiplyAlpha,flipY){this._MaybeCreateRenderTarget();if(!this._renderTarget)throw new Error("invalid canvas size");
-if(imageData.width!==this._renderTarget.GetWidth()||imageData.height!==this._renderTarget.GetHeight())throw new Error(`wrong size ImageData: expected ${this._renderTarget.GetWidth()} x ${this._renderTarget.GetHeight()}, got ${imageData.width} x ${imageData.height}`);C3.clearArray(this._drawCommands);const renderer=this._runtime.GetRenderer();if(this._texRenderTarget){const lastRenderTarget=renderer.GetRenderTarget();const texture=this._texRenderTarget.GetTexture();renderer.UpdateTexture(imageData,
-texture,{premultiplyAlpha:!!premultiplyAlpha,flipY:!!flipY});renderer.SetRenderTarget(this._renderTarget);renderer.CopyRenderTarget(this._texRenderTarget,"crop");renderer.SetRenderTarget(lastRenderTarget)}else{const texture=this._renderTarget.GetTexture();renderer.UpdateTexture(imageData,texture,{premultiplyAlpha:!!premultiplyAlpha,flipY:!!flipY})}this._runtime.UpdateRender()}GetScriptInterfaceClass(){return self.IDrawingCanvasInstance}};const map=new WeakMap;function arrToColor(arr){tempColor.setFromJSON(arr);
-return tempColor}function arrToColor2(arr){tempColor2.setFromJSON(arr);return tempColor2}const VALID_GRADIENT_DIRECTIONS=["horizontal","vertical"];const VALID_LINE_CAPS=new Set(["butt","square"]);function ValidateLineCap(capStr){if(!VALID_LINE_CAPS.has(capStr))throw new Error("invalid line cap");}function ValidatePoly(polyArr){C3X.RequireArray(polyArr);for(const p of polyArr){C3X.RequireArray(p);C3X.RequireFiniteNumber(p[0]);C3X.RequireFiniteNumber(p[1])}}const BLEND_MODE_TO_INDEX=new Map([["normal",
-0],["additive",1],["copy",3],["destination-over",4],["source-in",5],["destination-in",6],["source-out",7],["destination-out",8],["source-atop",9],["destination-atop",10]]);self.IDrawingCanvasInstance=class IDrawingCanvasInstance extends self.IWorldInstance{constructor(){super();map.set(this,self.IInstance._GetInitInst().GetSdkInstance())}setFixedResolutionMode(fixedWidth,fixedHeight){C3X.RequireFiniteNumber(fixedWidth);C3X.RequireFiniteNumber(fixedHeight);map.get(this)._SetFixedResolutionMode(fixedWidth,
-fixedHeight)}setAutoResolutionMode(){map.get(this)._SetAutoResolutionMode()}clearCanvas(rgbArr){C3X.RequireArray(rgbArr);map.get(this)._ClearCanvas(arrToColor(rgbArr))}clearRect(left,top,right,bottom,rgbArr){C3X.RequireFiniteNumber(left);C3X.RequireFiniteNumber(top);C3X.RequireFiniteNumber(right);C3X.RequireFiniteNumber(bottom);C3X.RequireArray(rgbArr);map.get(this)._ClearRect(left,top,right,bottom,arrToColor(rgbArr))}fillRect(left,top,right,bottom,rgbArr){C3X.RequireFiniteNumber(left);C3X.RequireFiniteNumber(top);
-C3X.RequireFiniteNumber(right);C3X.RequireFiniteNumber(bottom);C3X.RequireArray(rgbArr);map.get(this)._FillRect(left,top,right,bottom,arrToColor(rgbArr))}fillLinearGradient(left,top,right,bottom,rgbArr1,rgbArr2,dirStr="horizontal"){C3X.RequireFiniteNumber(left);C3X.RequireFiniteNumber(top);C3X.RequireFiniteNumber(right);C3X.RequireFiniteNumber(bottom);C3X.RequireArray(rgbArr1);C3X.RequireArray(rgbArr2);const dir=VALID_GRADIENT_DIRECTIONS.indexOf(dirStr);if(dir<0)throw new Error("invalid gradient direction");
-map.get(this)._FillLinearGradient(left,top,right,bottom,arrToColor(rgbArr1),arrToColor2(rgbArr2),dir)}fillEllipse(x,y,radiusX,radiusY,rgbArr,isSmooth=true){C3X.RequireFiniteNumber(x);C3X.RequireFiniteNumber(y);C3X.RequireFiniteNumber(radiusX);C3X.RequireFiniteNumber(radiusY);C3X.RequireArray(rgbArr);map.get(this)._FillEllipse(x,y,radiusX,radiusY,arrToColor(rgbArr),!!isSmooth)}outlineEllipse(x,y,radiusX,radiusY,rgbArr,thickness,isSmooth=true){C3X.RequireFiniteNumber(x);C3X.RequireFiniteNumber(y);C3X.RequireFiniteNumber(radiusX);
-C3X.RequireFiniteNumber(radiusY);C3X.RequireArray(rgbArr);C3X.RequireFiniteNumber(thickness);map.get(this)._OutlineEllipse(x,y,radiusX,radiusY,arrToColor(rgbArr),thickness,!!isSmooth)}outlineRect(left,top,right,bottom,rgbArr,thickness){C3X.RequireFiniteNumber(left);C3X.RequireFiniteNumber(top);C3X.RequireFiniteNumber(right);C3X.RequireFiniteNumber(bottom);C3X.RequireArray(rgbArr);C3X.RequireFiniteNumber(thickness);map.get(this)._OutlineRect(left,top,right,bottom,arrToColor(rgbArr),thickness)}line(x1,
-y1,x2,y2,rgbArr,thickness,capStr="butt"){C3X.RequireFiniteNumber(x1);C3X.RequireFiniteNumber(y1);C3X.RequireFiniteNumber(x2);C3X.RequireFiniteNumber(y2);C3X.RequireArray(rgbArr);C3X.RequireFiniteNumber(thickness);ValidateLineCap(capStr);map.get(this)._Line(x1,y1,x2,y2,arrToColor(rgbArr),thickness,capStr)}lineDashed(x1,y1,x2,y2,rgbArr,thickness,dashLength,capStr="butt"){C3X.RequireFiniteNumber(x1);C3X.RequireFiniteNumber(y1);C3X.RequireFiniteNumber(x2);C3X.RequireFiniteNumber(y2);C3X.RequireArray(rgbArr);
-C3X.RequireFiniteNumber(thickness);C3X.RequireFiniteNumber(dashLength);ValidateLineCap(capStr);map.get(this)._LineDashed(x1,y1,x2,y2,arrToColor(rgbArr),thickness,dashLength,capStr)}linePoly(polyArr,rgbArr,thickness,capStr="butt"){ValidatePoly(polyArr);C3X.RequireArray(rgbArr);C3X.RequireFiniteNumber(thickness);ValidateLineCap(capStr);map.get(this)._LinePoly(polyArr,arrToColor(rgbArr),thickness,capStr)}lineDashedPoly(polyArr,rgbArr,thickness,dashLength,capStr="butt"){ValidatePoly(polyArr);C3X.RequireArray(rgbArr);
-C3X.RequireFiniteNumber(thickness);C3X.RequireFiniteNumber(dashLength);ValidateLineCap(capStr);map.get(this)._LineDashedPoly(polyArr,arrToColor(rgbArr),thickness,dashLength,capStr)}fillPoly(polyArr,rgbArr,isConvex=false){ValidatePoly(polyArr);C3X.RequireArray(rgbArr);map.get(this)._FillPoly(polyArr,arrToColor(rgbArr),!!isConvex)}setDrawBlend(blendMode){const bmIndex=BLEND_MODE_TO_INDEX.get(blendMode);if(typeof bmIndex!=="number")throw new Error("invalid blend mode");map.get(this)._SetDrawBlend(bmIndex)}pasteInstances(instanceArr,
-includeFx=true){C3X.RequireArray(instanceArr);const inst=map.get(this);const runtime=inst.GetRuntime();return inst._PasteInstances(instanceArr.map(i=>runtime._UnwrapIWorldInstance(i)),!!includeFx)}getImagePixelData(){return map.get(this).GetImagePixelData()}loadImagePixelData(imageData,premultiplyAlpha=false){C3X.RequireInstanceOf(imageData,ImageData);const sdkInst=map.get(this);sdkInst.LoadImagePixelData(imageData,premultiplyAlpha,sdkInst.GetRuntime().GetRenderer().IsWebGL())}get surfaceDeviceWidth(){const inst=
-map.get(this);inst._MaybeCreateRenderTarget();const rt=inst._GetRenderTarget();if(!rt)throw new Error("invalid canvas size");return rt.GetWidth()}get surfaceDeviceHeight(){const inst=map.get(this);inst._MaybeCreateRenderTarget();const rt=inst._GetRenderTarget();if(!rt)throw new Error("invalid canvas size");return rt.GetHeight()}getSurfaceDeviceSize(){const inst=map.get(this);inst._MaybeCreateRenderTarget();const rt=inst._GetRenderTarget();if(!rt)throw new Error("invalid canvas size");return[rt.GetWidth(),
-rt.GetHeight()]}get pixelScale(){return map.get(this)._GetPixelScale()}}}{const C3=self.C3;C3.Plugins.DrawingCanvas.Cnds={OnSavedImage(){return true},OnSnapshot(){return true},OnResolutionChanged(){return true}}}
-{const C3=self.C3;const tempColor1=C3.New(C3.Color);const tempColor2=C3.New(C3.Color);function RgbToColor(rgb){tempColor1.setFromRgbValue(rgb);return tempColor1}function RgbToColor2(rgb){tempColor2.setFromRgbValue(rgb);return tempColor2}C3.Plugins.DrawingCanvas.Acts={SetEffect(effect){this.GetWorldInfo().SetBlendMode(effect);this._runtime.UpdateRender()},SetResolutionMode(mode,fixedWidth,fixedHeight){if(mode===1)this._SetFixedResolutionMode(fixedWidth,fixedHeight);else this._SetAutoResolutionMode()},
-ClearCanvas(rgb){this._ClearCanvas(RgbToColor(rgb))},ClearRect(left,top,right,bottom,rgb){this._ClearRect(left,top,right,bottom,RgbToColor(rgb))},FillRect(left,top,right,bottom,rgb){this._FillRect(left,top,right,bottom,RgbToColor(rgb))},FillLinearGradient(left,top,right,bottom,rgb1,rgb2,dir){this._FillLinearGradient(left,top,right,bottom,RgbToColor(rgb1),RgbToColor2(rgb2),dir)},FillEllipse(x,y,radiusX,radiusY,rgb,edge){this._FillEllipse(x,y,radiusX,radiusY,RgbToColor(rgb),edge!==0)},OutlineEllipse(x,
-y,radiusX,radiusY,rgb,thickness,edge){this._OutlineEllipse(x,y,radiusX,radiusY,RgbToColor(rgb),thickness,edge!==0)},OutlineRect(left,top,right,bottom,rgb,thickness){this._OutlineRect(left,top,right,bottom,RgbToColor(rgb),thickness)},Line(x1,y1,x2,y2,rgb,thickness,cap){const capStr=cap===0?"butt":"square";this._Line(x1,y1,x2,y2,RgbToColor(rgb),thickness,capStr)},LineDashed(x1,y1,x2,y2,rgb,thickness,dashLength,cap){const capStr=cap===0?"butt":"square";this._LineDashed(x1,y1,x2,y2,RgbToColor(rgb),thickness,
-dashLength,capStr)},AddPolyPoint(x,y){this._currentPoly.push([x,y])},ResetPoly(){C3.clearArray(this._currentPoly)},LinePoly(rgb,thickness,cap){const capStr=cap===0?"butt":"square";this._LinePoly(this._currentPoly,RgbToColor(rgb),thickness,capStr)},LineDashedPoly(rgb,thickness,dashLength,cap){const capStr=cap===0?"butt":"square";this._LineDashedPoly(this._currentPoly,RgbToColor(rgb),thickness,dashLength,capStr)},FillPoly(rgb,isConvex){this._FillPoly(this._currentPoly,RgbToColor(rgb),isConvex)},SetDrawBlend(blendMode){if(blendMode>=
-2)blendMode++;this._SetDrawBlend(blendMode)},PasteObject(objectClass,includeFx){if(!objectClass)return;return this._PasteInstances(objectClass.GetCurrentSol().GetInstances(),includeFx!==0)},SaveImage(format,quality,x,y,width,height){const formatStr=format===0?"image/png":"image/jpeg";quality/=100;const areaRect=C3.New(C3.Rect);areaRect.setWH(x,y,width,height);return new Promise(resolve=>{this._AddDrawCommand(new C3.Plugins.DrawingCanvas.DrawCommand.SaveImage(async imageData=>{const imgDataBuffer=
-imageData.data.buffer;const width=imageData.width;const height=imageData.height;const needFlipY=this._runtime.GetRenderer().IsWebGL();const processedBuffer=await this._runtime.AddJob("ProcessImageData",{"buffer":imgDataBuffer,"width":width,"height":height,"unpremultiply":true,"flipY":needFlipY&&!C3.Supports.ImageBitmapOptions},[imgDataBuffer]);imageData=new ImageData(new Uint8ClampedArray(processedBuffer),width,height);let blob;if(C3.Supports.ImageBitmapOptions){const imageBitmap=await createImageBitmap(imageData,
-{"premultiplyAlpha":"none","imageOrientation":needFlipY?"flipY":"none"});blob=await C3.DrawableToBlob(imageBitmap,formatStr,quality)}else blob=await C3.ImageDataToBlob(imageData,formatStr,quality);if(this._savedImageUrl)URL.revokeObjectURL(this._savedImageUrl);this._savedImageUrl=URL.createObjectURL(blob);this.Trigger(C3.Plugins.DrawingCanvas.Cnds.OnSavedImage);resolve()},areaRect))})},SaveSnapshot(){return new Promise(resolve=>{this._AddDrawCommand(new C3.Plugins.DrawingCanvas.DrawCommand.SaveImage(imageData=>
-{this._snapshot=imageData;this.Trigger(C3.Plugins.DrawingCanvas.Cnds.OnSnapshot);resolve()}))})},ClearSnapshot(){this._snapshot=null},SnapshotSetPixel(x,y,rgb){this.SetSnapshotPixel(x,y,rgb)},LoadSnapshot(){if(!this._snapshot||!this._renderTarget)return;if(this._snapshot.width!==this._renderTarget.GetWidth()||this._snapshot.height!==this._renderTarget.GetHeight())return;this.LoadImagePixelData(this._snapshot,false)}}}
-{const C3=self.C3;C3.Plugins.DrawingCanvas.Exps={SavedImageURL(){return this._savedImageUrl},SnapshotRedAt(x,y){return this.GetSnapshotPixel(x,y)[0]},SnapshotGreenAt(x,y){return this.GetSnapshotPixel(x,y)[1]},SnapshotBlueAt(x,y){return this.GetSnapshotPixel(x,y)[2]},SnapshotAlphaAt(x,y){return this.GetSnapshotPixel(x,y)[3]},SnapshotWidth(){return this._snapshot?this._snapshot.width:0},SnapshotHeight(){return this._snapshot?this._snapshot.height:0},PixelScale(){return this._GetPixelScale()},SurfaceDeviceWidth(){const rt=
-this._GetRenderTarget();return rt?rt.GetWidth():0},SurfaceDeviceHeight(){const rt=this._GetRenderTarget();return rt?rt.GetHeight():0}}};
-
-}
-
-// scripts/plugins/DrawingCanvas/c3runtime/drawCommand.js
-{
-'use strict';const C3=self.C3;const tempQuad=C3.New(C3.Quad);const tempUvQuad=C3.New(C3.Quad);const tempVector2=C3.New(C3.Vector2);C3.Plugins.DrawingCanvas.DrawCommand=class DrawCommand{constructor(){}Do(renderer){throw new Error("required override");}};const DrawCommand=C3.Plugins.DrawingCanvas.DrawCommand;
-DrawCommand.SaveImage=class SaveImageCommand extends DrawCommand{constructor(callback,areaRect){super();this._callback=callback;this._areaRect=areaRect}Do(renderer,scale,canvasInst){let readRenderTarget=renderer.GetRenderTarget();if(readRenderTarget.GetMultisampling()>=2){const texRenderTarget=canvasInst._GetTexRenderTarget();renderer.SetRenderTarget(texRenderTarget);renderer.CopyRenderTarget(readRenderTarget,"crop");renderer.SetRenderTarget(readRenderTarget);readRenderTarget=texRenderTarget}renderer.ReadBackRenderTargetToImageData(readRenderTarget,
-false,this._areaRect).then(this._callback)}};DrawCommand.ClearCanvas=class ClearCanvasCommand extends DrawCommand{constructor(color){super();this._color=C3.New(C3.Color,color);this._color.premultiply()}Do(renderer){renderer.Clear(this._color)}};
-DrawCommand.ClearRect=class ClearRectCommand extends DrawCommand{constructor(left,top,right,bottom,color){super();this._rect=C3.New(C3.Rect);this._rect.set(left,top,right,bottom);this._color=C3.New(C3.Color,color);this._color.premultiply()}Do(renderer,scale,canvasInst){this._rect.multiply(scale,scale);renderer.SetColorFillMode();renderer.SetColor(this._color);renderer.SetBlendMode(3);renderer.Rect(this._rect);canvasInst._ApplyCurrentDrawingBlendMode(renderer)}};
-DrawCommand.FillRect=class FillRectCommand extends DrawCommand{constructor(left,top,right,bottom,color){super();this._rect=C3.New(C3.Rect);this._rect.set(left,top,right,bottom);this._color=C3.New(C3.Color,color);this._color.premultiply()}Do(renderer,scale){renderer.SetColorFillMode();renderer.SetColor(this._color);this._rect.multiply(scale,scale);renderer.Rect(this._rect)}};
-DrawCommand.FillLinearGradient=class FillLinearGradientCommand extends DrawCommand{constructor(left,top,right,bottom,color1,color2,dir){super();this._rect=C3.New(C3.Rect);this._rect.set(left,top,right,bottom);this._color1=C3.New(C3.Color,color1);this._color2=C3.New(C3.Color,color2);this._dir=dir}Do(renderer,scale){renderer.SetLinearGradientFillMode();renderer.SetColor(this._color1);renderer.SetGradientColor(this._color2);this._rect.multiply(scale,scale);tempQuad.setFromRect(this._rect);if(this._dir===
-0)tempUvQuad.set(0,0,1,0,1,1,0,1);else tempUvQuad.set(0,1,0,0,1,0,1,1);renderer.Quad4(tempQuad,tempUvQuad)}};
-DrawCommand.FillEllipse=class FillEllipseCommand extends DrawCommand{constructor(x,y,radiusX,radiusY,color,isSmooth){super();this._rect=C3.New(C3.Rect);this._rect.set(x-radiusX,y-radiusY,x+radiusX,y+radiusY);this._color=C3.New(C3.Color,color);this._color.premultiply();this._isSmooth=isSmooth}Do(renderer,scale){this._rect.multiply(scale,scale);if(this._isSmooth){renderer.SetSmoothEllipseFillMode();renderer.SetColor(this._color);this._rect.inflate(.5,.5);renderer.SetEllipseParams(1/this._rect.width(),
-1/this._rect.height());renderer.Rect(this._rect)}else{renderer.SetHardEllipseFillMode();renderer.SetColor(this._color);renderer.Rect(this._rect)}}};
-DrawCommand.OutlineEllipse=class OutlinellipseCommand extends DrawCommand{constructor(x,y,radiusX,radiusY,color,thickness,isSmooth){super();this._rect=C3.New(C3.Rect);this._rect.set(x-radiusX,y-radiusY,x+radiusX,y+radiusY);this._color=C3.New(C3.Color,color);this._color.premultiply();this._thickness=thickness;this._isSmooth=isSmooth}Do(renderer,scale){this._rect.multiply(scale,scale);if(this._isSmooth){renderer.SetSmoothEllipseOutlineMode();renderer.SetColor(this._color);this._rect.inflate(.5,.5);
-renderer.SetEllipseParams(1/this._rect.width(),1/this._rect.height(),this._thickness*scale);renderer.Rect(this._rect)}else{renderer.SetHardEllipseOutlineMode();renderer.SetEllipseParams(1/this._rect.width(),1/this._rect.height(),this._thickness*scale);renderer.SetColor(this._color);renderer.Rect(this._rect)}}};
-DrawCommand.OutlineRect=class OutlineRectCommand extends DrawCommand{constructor(left,top,right,bottom,color,thickness){super();this._rect=C3.New(C3.Rect);this._rect.set(left,top,right,bottom);this._color=C3.New(C3.Color,color);this._color.premultiply();this._thickness=thickness}Do(renderer,scale){renderer.SetColorFillMode();renderer.SetColor(this._color);renderer.PushLineCapZag();renderer.PushLineWidth(this._thickness*scale);this._rect.multiply(scale,scale);renderer.LineRect2(this._rect);renderer.PopLineCap();
-renderer.PopLineWidth()}};
-DrawCommand.Line=class LineCommand extends DrawCommand{constructor(x1,y1,x2,y2,color,thickness,cap){super();this._rect=C3.New(C3.Rect);this._rect.set(x1,y1,x2,y2);this._color=C3.New(C3.Color,color);this._color.premultiply();this._thickness=thickness;this._cap=cap}Do(renderer,scale){renderer.SetColorFillMode();renderer.SetColor(this._color);renderer.PushLineCap(this._cap);renderer.PushLineWidth(this._thickness*scale);const rc=this._rect;rc.multiply(scale,scale);renderer.Line(rc.getLeft(),rc.getTop(),
-rc.getRight(),rc.getBottom());renderer.PopLineCap();renderer.PopLineWidth()}};
-DrawCommand.LinePoly=class LinePolyCommand extends DrawCommand{constructor(poly,color,thickness,cap){super();this._poly=poly;this._color=C3.New(C3.Color,color);this._color.premultiply();this._thickness=thickness;this._cap=cap}Do(renderer,scale){renderer.SetColorFillMode();renderer.SetColor(this._color);renderer.PushLineCap(this._cap);renderer.PushLineWidth(this._thickness*scale);const poly=this._poly;for(let i=0,len=poly.length;i<len;++i){const j=(i+1)%len;const x1=poly[i][0]*scale;const y1=poly[i][1]*
-scale;const x2=poly[j][0]*scale;const y2=poly[j][1]*scale;renderer.Line(x1,y1,x2,y2)}renderer.PopLineCap();renderer.PopLineWidth()}};
-DrawCommand.LineDashed=class LineDashedCommand extends DrawCommand{constructor(x1,y1,x2,y2,color,thickness,dashLength,dashTex,cap){super();this._rect=C3.New(C3.Rect);this._rect.set(x1,y1,x2,y2);this._color=C3.New(C3.Color,color);this._color.premultiply();this._thickness=thickness;this._dashLength=dashLength;this._dashTex=dashTex;this._cap=cap}Do(renderer,scale){renderer.SetTextureFillMode();renderer.SetTexture(this._dashTex);renderer.SetColor(this._color);renderer.PushLineCap(this._cap);renderer.PushLineWidth(this._thickness*
-scale);const rc=this._rect;const numDashes=C3.distanceTo(rc.getLeft(),rc.getTop(),rc.getRight(),rc.getBottom())/(this._dashLength*2);rc.multiply(scale,scale);renderer.TexturedLine(rc.getLeft(),rc.getTop(),rc.getRight(),rc.getBottom(),0,numDashes);renderer.PopLineCap();renderer.PopLineWidth()}};
-DrawCommand.LineDashedPoly=class LineDashedPolyCommand extends DrawCommand{constructor(poly,color,thickness,dashLength,dashTex,cap){super();this._poly=poly;this._color=C3.New(C3.Color,color);this._color.premultiply();this._thickness=thickness;this._dashLength=dashLength;this._dashTex=dashTex;this._cap=cap}Do(renderer,scale){renderer.SetTextureFillMode();renderer.SetTexture(this._dashTex);renderer.SetColor(this._color);renderer.PushLineCap(this._cap);renderer.PushLineWidth(this._thickness*scale);let u=
-0;const poly=this._poly;for(let i=0,len=poly.length;i<len;++i){const j=(i+1)%len;const x1=poly[i][0];const y1=poly[i][1];const x2=poly[j][0];const y2=poly[j][1];const v=u+C3.distanceTo(x1,y1,x2,y2)/(this._dashLength*2);renderer.TexturedLine(x1*scale,y1*scale,x2*scale,y2*scale,u,v);u=v-Math.floor(v)}renderer.PopLineCap();renderer.PopLineWidth()}};
-DrawCommand.FillPoly=class FillPolyCommand extends DrawCommand{constructor(poly,color,isConvex){super();this._poly=poly;this._isConvex=isConvex;this._color=C3.New(C3.Color,color);this._color.premultiply()}Do(renderer,scale){renderer.SetColorFillMode();renderer.SetColor(this._color);const poly=this._poly;for(let i=0,len=poly.length;i<len;++i){const p=poly[i];p[0]*=scale;p[1]*=scale}if(this._isConvex)renderer.ConvexPoly(poly.flat());else{const polyDecomp=self.polyDecomp;if(!polyDecomp.isSimple(poly))return;
-polyDecomp.makeCCW(poly);polyDecomp.removeCollinearPoints(poly,C3.toRadians(.1));const convexPolygons=polyDecomp.quickDecomp(poly);for(const convexPoly of convexPolygons)renderer.ConvexPoly(convexPoly.flat())}}};DrawCommand.SetDrawBlend=class SetDrawBlend extends DrawCommand{constructor(bm){super();this._blendIndex=bm}Do(renderer,scale,canvasInst){canvasInst._SetDrawingBlendMode(this._blendIndex);canvasInst._ApplyCurrentDrawingBlendMode(renderer)}};
-DrawCommand.DrawInstances=class DrawInstancesCommand extends DrawCommand{constructor(instances,includeFx,canvasWi,resolve){super();const ownLayer=canvasWi.GetLayer();this._includeFx=includeFx;this._resolve=resolve;this._layoutTransform=ownLayer.GetLayout().SaveTransform();this._layerTransforms=new Map;this._layerTransforms.set(ownLayer,ownLayer.SaveTransform());this._instances=instances.map(inst=>this._SaveInstanceState(inst,canvasWi))}_SaveInstanceState(inst,canvasWi){const canvasAngle=canvasWi.GetAngle();
-const canvasLayer=canvasWi.GetLayer();const instWi=inst.GetWorldInfo();const instLayer=instWi.GetLayer();const oldX=instWi.GetX();const oldY=instWi.GetY();const oldWidth=instWi.GetWidth();const oldHeight=instWi.GetHeight();const oldAngle=instWi.GetAngle();if(!this._layerTransforms.has(instLayer))this._layerTransforms.set(instLayer,instLayer.SaveTransform());const areLayerTransformsCompatible=canvasLayer.IsTransformCompatibleWith(instLayer);if(!areLayerTransformsCompatible){const [dsx,dsy]=instLayer.LayerToDrawSurface(oldX,
-oldY);const [tx,ty]=canvasLayer.DrawSurfaceToLayer(dsx,dsy);instWi.SetXY(tx,ty);const scaleFactor=instLayer.GetNormalScale()/canvasLayer.GetNormalScale();instWi.SetSize(oldWidth*scaleFactor,oldHeight*scaleFactor);const angleOffset=canvasLayer.GetOwnAngle()-instLayer.GetOwnAngle();instWi.OffsetAngle(angleOffset)}if(canvasAngle!==0){const canvasQuad=canvasWi.GetBoundingQuad();const canvasMidX=canvasQuad.midX();const canvasMidY=canvasQuad.midY();const sinA=-canvasWi.GetSinAngle();const cosA=canvasWi.GetCosAngle();
-tempVector2.set(oldX,oldY);tempVector2.offset(-canvasMidX,-canvasMidY);tempVector2.rotatePrecalc(sinA,cosA);tempVector2.offset(canvasMidX,canvasMidY);instWi.SetXY(tempVector2.getX(),tempVector2.getY());instWi.OffsetAngle(-canvasAngle)}if(canvasAngle!==0||!areLayerTransformsCompatible)instWi.SetBboxChanged();const ret=[inst,inst.SaveToJson("visual-state")];if(canvasAngle!==0||!areLayerTransformsCompatible){instWi.SetXY(oldX,oldY);instWi.SetSize(oldWidth,oldHeight);instWi.SetAngle(oldAngle);instWi.SetBboxChanged()}return ret}Do(renderer,
-scale,canvasInst){const canvasManager=canvasInst.GetRuntime().GetCanvasManager();const layer=canvasInst.GetWorldInfo().GetLayer();const layout=layer.GetLayout();const viewport=layer.GetViewport();const canvasBbox=canvasInst.GetWorldInfo().GetBoundingBox();const renderTarget=canvasInst._GetRenderTarget();const isMultisamplng=canvasInst.GetMultisampling()>=2;const includeFx=this._includeFx;const restoreLayoutTransform=layout.SaveTransform();layout.RestoreTransform(this._layoutTransform);const restoreLayerTransforms=
-new Map;for(const [layer,transform]of this._layerTransforms){restoreLayerTransforms.set(layer,layer.SaveTransform());layer.RestoreTransform(transform)}canvasManager.SetIsPastingToDrawingCanvas(true);const viewOffX=(viewport.width()-canvasBbox.width())/-2;const viewOffY=(viewport.height()-canvasBbox.height())/-2;const [canvasDeviceLeft,canvasDeviceTop]=layer.LayerToDrawSurface(canvasBbox.getLeft(),canvasBbox.getTop());canvasManager.SetDeviceTransformOffset(canvasDeviceLeft,canvasDeviceTop);const canvasOffX=
-canvasBbox.getLeft()-viewport.getLeft();const canvasOffY=canvasBbox.getTop()-viewport.getTop();const offX=viewOffX+canvasOffX;const offY=viewOffY+canvasOffY;const viewH=renderTarget.GetHeight();let effectiveScale=1;if(canvasInst.IsFixedResolutionMode())effectiveScale=renderTarget.GetWidth()/Math.floor(canvasBbox.width())/layer.GetNormalScale();else effectiveScale=canvasManager.GetRenderScale()*self.devicePixelRatio;const effectiveViewH=viewH/effectiveScale;const pxOff=.5/effectiveScale;renderer.SetProjectionMatrix(renderTarget.GetProjectionMatrix());
-layer._SetTransform(renderer,false,offX+pxOff,offY+pxOff,effectiveViewH);for(let i=0,len=this._instances.length;i<len;++i){const info=this._instances[i];const inst=info[0];const instState=info[1];if(inst.IsDestroyed())continue;const wi=inst.GetWorldInfo();const oldState=inst.SaveToJson("visual-state");inst.LoadFromJson(instState,"visual-state");wi.GetBoundingBox();if(includeFx&&wi.HasAnyActiveEffect()&&(!isMultisamplng||!wi.GetInstanceEffectList().HasAnyActiveBackgroundBlendingEffect())){const opts=
-{drawContentHook:(effectChain,renderer,drawContent)=>{layer._SetTransform(renderer);drawContent();effectChain._SetDeviceTransform(renderer)},compositOffX:canvasDeviceLeft,compositOffY:canvasDeviceTop,updateOwnProjection:true};inst._SetIsDrawingWithEffects(true);if(layer._DrawInstanceWithEffects(inst,wi,renderer,renderTarget,opts))layer._SetTransform(renderer,false,offX+pxOff,offY+pxOff,effectiveViewH);inst._SetIsDrawingWithEffects(false)}else layer._DrawInstance(inst,wi,renderer);inst.LoadFromJson(oldState,
-"visual-state")}canvasManager.SetDeviceTransformOffset(0,0);canvasManager.SetIsPastingToDrawingCanvas(false);canvasInst._SetRenderTargetDeviceTransform(renderer);canvasInst._ApplyCurrentDrawingBlendMode(renderer);layout.RestoreTransform(restoreLayoutTransform);for(const [layer,transform]of restoreLayerTransforms)layer.RestoreTransform(transform);this._resolve()}};
-
-}
-
 // scripts/plugins/TiledBg/c3runtime/runtime.js
 {
 'use strict';{const C3=self.C3;C3.Plugins.TiledBg=class TiledBgPlugin extends C3.SDKPluginBase{constructor(opts){super(opts)}Release(){super.Release()}}}
@@ -4712,6 +4586,23 @@ y){this._SetTileBlendMarginX(x/100);this._SetTileBlendMarginY(y/100)},SetEffect(
 await imageInfo.LoadStaticTexture(runtime.GetRenderer(),{sampling:runtime.GetSampling(),wrapX:"repeat",wrapY:"repeat"});if(!texture)return}catch(err){console.error("Load image from URL failed: ",err);if(!this.WasReleased())this.Trigger(C3.Plugins.TiledBg.Cnds.OnURLFailed);return}if(this.WasReleased()){imageInfo.Release();return}this._ReleaseOwnImage();this._ownImageInfo=imageInfo;runtime.UpdateRender();await this.TriggerAsync(C3.Plugins.TiledBg.Cnds.OnURLLoaded)}}}
 {const C3=self.C3;C3.Plugins.TiledBg.Exps={ImageWidth(){return this.GetCurrentImageInfo().GetWidth()},ImageHeight(){return this.GetCurrentImageInfo().GetHeight()},ImageOffsetX(){return this._imageOffsetX},ImageOffsetY(){return this._imageOffsetY},ImageScaleX(){return this._imageScaleX*100},ImageScaleY(){return this._imageScaleY*100},ImageAngle(){return C3.toDegrees(this._imageAngle)},TileXRandom(){return this._GetTileXRandom()*100},TileYRandom(){return this._GetTileYRandom()*100},TileAngleRandom(){return this._GetTileAngleRandom()*
 100},TileBlendMarginX(){return this._GetTileBlendMarginX()*100},TileBlendMarginY(){return this._GetTileBlendMarginY()*100}}};
+
+}
+
+// scripts/plugins/sliderbar/c3runtime/runtime.js
+{
+'use strict';{const C3=self.C3;const DOM_COMPONENT_ID="sliderbar";C3.Plugins.sliderbar=class SliderBarPlugin extends C3.SDKDOMPluginBase{constructor(opts){super(opts,DOM_COMPONENT_ID);this.AddElementMessageHandler("click",(sdkInst,e)=>sdkInst._OnClick(e));this.AddElementMessageHandler("change",(sdkInst,e)=>sdkInst._OnChange(e));this.AddElementMessageHandler("input",(sdkInst,e)=>sdkInst._OnInput(e))}Release(){super.Release()}}}{const C3=self.C3;C3.Plugins.sliderbar.Type=class SliderBarType extends C3.SDKTypeBase{constructor(objectClass){super(objectClass)}Release(){super.Release()}OnCreate(){}}}
+{const C3=self.C3;const C3X=self.C3X;const VALUE=0;const MINIMUM=1;const MAXIMUM=2;const STEP=3;const TOOLTIP=4;const INITIALLY_VISIBLE=5;const ENABLE=6;const ID=7;const CLASS_NAME=8;const DOM_COMPONENT_ID="sliderbar";C3.Plugins.sliderbar.Instance=class SliderBarInstance extends C3.SDKDOMInstanceBase{constructor(inst,properties){super(inst,DOM_COMPONENT_ID);this._value=0;this._min=0;this._max=100;this._step=1;this._title="";this._isEnabled=true;this._id="";this._className="";if(properties){this._value=
+properties[VALUE];this._min=properties[MINIMUM];this._max=properties[MAXIMUM];this._step=properties[STEP];this._title=properties[TOOLTIP];this.GetWorldInfo().SetVisible(properties[INITIALLY_VISIBLE]);this._isEnabled=properties[ENABLE];this._id=properties[ID];this._className=properties[CLASS_NAME]}this.CreateElement({"id":this._id,"className":this._className})}Release(){super.Release()}GetElementState(){return{"value":this._value,"min":this._min,"max":this._max,"step":this._step,"title":this._title,
+"isEnabled":this._isEnabled}}async _OnClick(e){this.DispatchScriptEvent("click",true);await this.TriggerAsync(C3.Plugins.sliderbar.Cnds.OnClicked)}async _OnChange(e){this._value=e["value"];this.DispatchScriptEvent("change",true);await this.TriggerAsync(C3.Plugins.sliderbar.Cnds.OnChanged)}async _OnInput(e){this._value=e["value"];this.DispatchScriptEvent("input",true);await this.TriggerAsync(C3.Plugins.sliderbar.Cnds.OnChanging)}Draw(renderer){}_SetValue(x){if(this._value===x)return;this._value=x;
+this.UpdateElementState()}_GetValue(){return this._value}_SetMaximum(x){if(this._max===x)return;this._max=x;this.UpdateElementState()}_GetMaximum(){return this._max}_SetMinimum(x){if(this._min===x)return;this._min=x;this.UpdateElementState()}_GetMinimum(){return this._min}_SetTooltip(title){if(this._title===title)return;this._title=title;this.UpdateElementState()}_GetTooltip(){return this._title}_SetStep(x){if(this._step===x)return;this._step=x;this.UpdateElementState()}_GetStep(){return this._step}_SetEnabled(e){e=
+!!e;if(this._isEnabled===e)return;this._isEnabled=e;this.UpdateElementState()}_IsEnabled(){return this._isEnabled}SaveToJson(){return{"v":this._value,"min":this._min,"max":this._max,"s":this._step,"t":this._title,"e":this._isEnabled,"id":this._id}}LoadFromJson(o){this._value=o["v"];this._min=o["min"];this._max=o["max"];this._step=o["s"];this._title=o["t"];this._isEnabled=o["e"];this._id=o["id"];this.UpdateElementState()}GetPropertyValueByIndex(index){switch(index){case VALUE:return this._GetValue();
+case MINIMUM:return this._GetMinimum();case MAXIMUM:return this._GetMaximum();case STEP:return this._GetStep();case TOOLTIP:return this._GetTooltip();case ENABLE:return this._IsEnbled()}}SetPropertyValueByIndex(index,value){switch(index){case VALUE:this._SetValue(value);break;case MINIMUM:this._SetMinimum(value);break;case MAXIMUM:this._SetMaximum(value);break;case STEP:this._SetStep(value);break;case TOOLTIP:this._SetTooltip(value);break;case ENABLE:this._SetEnabled(value);break}}GetDebuggerProperties(){const Acts=
+C3.Plugins.sliderbar.Acts;const prefix="plugins.sliderbar";return[{title:prefix+".name",properties:[{name:prefix+".properties.value.name",value:this._GetValue(),onedit:v=>this._SetValue(v)},{name:prefix+".properties.minimum.name",value:this._GetMinimum(),onedit:v=>this._SetMinimum(v)},{name:prefix+".properties.maximum.name",value:this._GetMaximum(),onedit:v=>this._SetMaximum(v)},{name:prefix+".properties.step.name",value:this._GetStep(),onedit:v=>this._SetStep(v)},{name:prefix+".properties.enabled.name",
+value:this._IsEnabled(),onedit:v=>this._SetEnabled(v)}]}]}GetScriptInterfaceClass(){return self.ISliderBarInstance}};const map=new WeakMap;self.ISliderBarInstance=class ITextInputInstance extends self.IDOMInstance{constructor(){super();map.set(this,self.IInstance._GetInitInst().GetSdkInstance())}set value(v){C3X.RequireFiniteNumber(v);map.get(this)._SetValue(v)}get value(){return map.get(this)._GetValue()}set maximum(v){C3X.RequireFiniteNumber(v);map.get(this)._SetMaximum(v)}get maximum(){return map.get(this)._GetMaximum()}set minimum(v){C3X.RequireFiniteNumber(v);
+map.get(this)._SetMinimum(v)}get minimum(){return map.get(this)._GetMinimum()}set step(v){C3X.RequireFiniteNumber(v);map.get(this)._SetStep(v)}get step(){return map.get(this)._GetStep()}set tooltip(str){C3X.RequireString(str);map.get(this)._SetTooltip(str)}get tooltip(){return map.get(this)._GetTooltip()}set isEnabled(e){map.get(this)._SetEnabled(e)}get isEnabled(){return map.get(this)._IsEnabled()}}}
+{const C3=self.C3;C3.Plugins.sliderbar.Cnds={OnClicked(){return true},OnChanged(){return true},OnChanging(){return true},CompareValue(cmp,x){return C3.compare(this._GetValue(),cmp,x)}}}{const C3=self.C3;C3.Plugins.sliderbar.Acts={SetTooltip(title){this._SetTooltip(title)},SetValue(x){this._SetValue(x)},SetMaximum(x){this._SetMaximum(x)},SetMinimum(x){this._SetMinimum(x)},SetStep(x){this._SetStep(x)}}}
+{const C3=self.C3;C3.Plugins.sliderbar.Exps={Value(){return this._GetValue()},Maximum(){return this._GetMaximum()},Minimum(){return this._GetMinimum()},Step(){return this._GetStep()}}};
 
 }
 
@@ -4864,6 +4755,13 @@ map.get(this)._SetWaitTime(t)}get waitTime(){return map.get(this)._GetWaitTime()
 
 }
 
+// scripts/behaviors/Persist/c3runtime/runtime.js
+{
+'use strict';{const C3=self.C3;C3.Behaviors.Persist=class PersistBehavior extends C3.SDKBehaviorBase{constructor(opts){super(opts)}Release(){super.Release()}}}{const C3=self.C3;C3.Behaviors.Persist.Type=class PersistType extends C3.SDKBehaviorTypeBase{constructor(behaviorType){super(behaviorType)}Release(){super.Release()}OnCreate(){}}}{const C3=self.C3;C3.Behaviors.Persist.Instance=class PersistInstance extends C3.SDKBehaviorInstanceBase{constructor(behInst,properties){super(behInst)}Release(){super.Release()}}}
+{const C3=self.C3;C3.Behaviors.Persist.Cnds={}}{const C3=self.C3;C3.Behaviors.Persist.Acts={}}{const C3=self.C3;C3.Behaviors.Persist.Exps={}};
+
+}
+
 // scripts/expTable.js
 {
 
@@ -4965,18 +4863,20 @@ self.C3_ExpressionFuncs = [
 		() => 1,
 		() => 0,
 		p => {
-			const v0 = p._GetNode(0).GetVar();
-			return () => ((v0.GetValue()) === (0) ? 1 : 0);
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const v1 = p._GetNode(1).GetVar();
+			return () => f0(v1.GetValue(), 3);
 		},
+		() => 0.05,
+		() => "configed",
 		() => 0.75,
 		() => "SpawnObject",
-		() => "SelfDestroy",
-		p => {
-			const n0 = p._GetNode(0);
-			return () => (n0.ExpObject() - 1024);
-		},
-		() => 1.5,
-		() => 0.05,
+		() => 25,
+		() => 2,
+		() => 3,
+		() => 4,
+		() => 75,
+		() => 5,
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			return () => ((f0(0, 100)) < (25) ? 1 : 0);
@@ -5010,6 +4910,11 @@ self.C3_ExpressionFuncs = [
 			const f1 = p._GetNode(1).GetBoundMethod();
 			return () => (v0.GetValue() * f1(2.5, 5));
 		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const v1 = p._GetNode(1).GetVar();
+			return () => ((f0(0, 100)) < (v1.GetValue()) ? 1 : 0);
+		},
 		() => "Bomb",
 		p => {
 			const n0 = p._GetNode(0);
@@ -5032,15 +4937,7 @@ self.C3_ExpressionFuncs = [
 			const f1 = p._GetNode(1).GetBoundMethod();
 			return () => ((n0.ExpObject()) >= ((f1() + 512)) ? 1 : 0);
 		},
-		p => {
-			const n0 = p._GetNode(0);
-			return () => ((n0.ExpObject()) === ("Orange") ? 1 : 0);
-		},
-		() => 3,
-		p => {
-			const n0 = p._GetNode(0);
-			return () => ((n0.ExpObject()) === ("Bomb") ? 1 : 0);
-		},
+		() => "Orange",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			return () => f0();
@@ -5066,13 +4963,13 @@ self.C3_ExpressionFuncs = [
 			const n0 = p._GetNode(0);
 			return () => n0.ExpObject();
 		},
+		() => "SelfDestroy",
 		() => 0.25,
 		p => {
 			const v0 = p._GetNode(0).GetVar();
 			const n1 = p._GetNode(1);
 			return () => and(((v0.GetValue()) === (1) ? 1 : 0), ((n1.ExpObject()) >= (8) ? 1 : 0));
 		},
-		() => 2,
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			return () => ((f0()) === (0) ? 1 : 0);
@@ -5117,8 +5014,6 @@ self.C3_ExpressionFuncs = [
 			const v0 = p._GetNode(0).GetVar();
 			return () => (v0.GetValue() + 1);
 		},
-		() => 0.5,
-		() => "Paste",
 		() => "AdjustHSL",
 		p => {
 			const n0 = p._GetNode(0);
@@ -5135,12 +5030,11 @@ self.C3_ExpressionFuncs = [
 			return () => f0(n1.ExpInstVar(), 100, 10);
 		},
 		() => "ResetGame",
-		p => {
-			const f0 = p._GetNode(0).GetBoundMethod();
-			const v1 = p._GetNode(1).GetVar();
-			return () => f0(v1.GetValue(), 3);
-		},
 		() => 0.1,
+		p => {
+			const v0 = p._GetNode(0).GetVar();
+			return () => ((v0.GetValue()) === (0) ? 1 : 0);
+		},
 		p => {
 			const v0 = p._GetNode(0).GetVar();
 			const v1 = p._GetNode(1).GetVar();
@@ -5184,8 +5078,16 @@ self.C3_ExpressionFuncs = [
 			return () => (("Strike " + (v0.GetValue()).toString()) + "!");
 		},
 		p => {
+			const v0 = p._GetNode(0).GetVar();
+			return () => ((v0.GetValue()).toString() + " Strikes");
+		},
+		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
-			return () => f0((-100), 100);
+			return () => f0((-60), 60);
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			return () => (n0.ExpObject()).toString();
 		}
 ];
 

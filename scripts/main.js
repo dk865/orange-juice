@@ -167,6 +167,12 @@ return outputChannel.port1}GetPortData(){return{"inputPort":this._inputPort,"out
 err);return false}}};self.RuntimeInterface.AddDOMHandlerClass(HANDLER_CLASS)};
 
 
+// scripts/plugins/sliderbar/dom/domSide.js
+'use strict';{const DOM_COMPONENT_ID="sliderbar";function StopPropagation(e){e.stopPropagation()}const HANDLER_CLASS=class SliderBarDOMHandler extends self.DOMElementHandler{constructor(iRuntime){super(iRuntime,DOM_COMPONENT_ID)}CreateElement(elementId,e){const elem=document.createElement("input");elem.type="range";elem.style.position="absolute";elem.style.userSelect="none";elem.style.webkitUserSelect="none";elem.addEventListener("pointerdown",StopPropagation);elem.addEventListener("pointermove",
+StopPropagation);elem.addEventListener("pointerrawupdate",StopPropagation);elem.addEventListener("pointerup",StopPropagation);elem.addEventListener("mousedown",StopPropagation);elem.addEventListener("mouseup",StopPropagation);elem.addEventListener("keydown",StopPropagation);elem.addEventListener("keyup",StopPropagation);elem.addEventListener("contextmenu",e=>e.preventDefault());elem.addEventListener("click",()=>this._PostToRuntimeElementMaybeSync("click",elementId));elem.addEventListener("change",
+()=>this.PostToRuntimeElement("change",elementId,{"value":parseFloat(elem.value)}));elem.addEventListener("input",()=>this.PostToRuntimeElement("input",elementId,{"value":parseFloat(elem.value)}));if(e["id"])elem.id=e["id"];if(e["className"])elem.className=e["className"];this.UpdateState(elem,e);return elem}UpdateState(elem,e){elem.max=e["max"];elem.min=e["min"];elem.step=e["step"];elem.value=e["value"];elem.disabled=!e["isEnabled"];elem.title=e["title"]}};self.RuntimeInterface.AddDOMHandlerClass(HANDLER_CLASS)};
+
+
 // start-export.js
 'use strict';{if(window["C3_Is_Supported"]){const enableWorker=true;window["c3_runtimeInterface"]=new self.RuntimeInterface({useWorker:enableWorker,workerMainUrl:"workermain.js",runtimeScriptList:["scripts/c3main.js"],scriptFolder:"scripts/",exportType:"html5"})}};
 
