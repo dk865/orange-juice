@@ -1,7 +1,7 @@
 {
 	"name": "Orange Juice",
 	"short_name": "Orange Juice",
-	"description": "",
+	"description": "A Game of Slicing Oranges",
 	"start_url": "index.html",
 	"display": "fullscreen",
 	"orientation": "landscape",
