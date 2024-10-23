@@ -4983,7 +4983,20 @@ self.C3_ExpressionFuncs = [
 			const f1 = p._GetNode(1).GetBoundMethod();
 			return () => ((n0.ExpObject()) >= ((f1() + 512)) ? 1 : 0);
 		},
-		() => "struck",
+		() => 960,
+		() => 540,
+		p => {
+			const v0 = p._GetNode(0).GetVar();
+			return () => (("Strike " + (v0.GetValue()).toString()) + "!");
+		},
+		p => {
+			const v0 = p._GetNode(0).GetVar();
+			return () => ((v0.GetValue()).toString() + " Strikes");
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => f0((-60), 60);
+		},
 		() => "Orange",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
@@ -5072,20 +5085,6 @@ self.C3_ExpressionFuncs = [
 		p => {
 			const v0 = p._GetNode(0).GetVar();
 			return () => ("Bomb2_" + (v0.GetValue()).toString());
-		},
-		() => 960,
-		() => 540,
-		p => {
-			const v0 = p._GetNode(0).GetVar();
-			return () => (("Strike " + (v0.GetValue()).toString()) + "!");
-		},
-		p => {
-			const v0 = p._GetNode(0).GetVar();
-			return () => ((v0.GetValue()).toString() + " Strikes");
-		},
-		p => {
-			const f0 = p._GetNode(0).GetBoundMethod();
-			return () => f0((-60), 60);
 		},
 		() => "AdjustHSL",
 		p => {
