@@ -4,6 +4,7 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.Sprite,
 		C3.Plugins.Touch,
 		C3.Behaviors.Tween,
+		C3.Behaviors.destroy,
 		C3.Plugins.Particles,
 		C3.Behaviors.Timer,
 		C3.Plugins.Text,
@@ -46,9 +47,9 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.Sprite.Exps.Angle,
 		C3.Plugins.System.Exps.layoutheight,
 		C3.Plugins.Sprite.Cnds.IsBoolInstanceVarSet,
+		C3.Plugins.Sprite.Acts.Destroy,
 		C3.Plugins.System.Acts.AddVar,
 		C3.Plugins.Text.Acts.SetAngle,
-		C3.Plugins.Sprite.Acts.Destroy,
 		C3.Plugins.System.Cnds.Else,
 		C3.Plugins.Sprite.Cnds.IsAnimPlaying,
 		C3.Plugins.Sprite.Acts.SetBoolInstanceVar,
@@ -81,7 +82,9 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.System.Acts.Wait,
 		C3.Plugins.System.Acts.GoToLayout,
 		C3.Plugins.System.Acts.SetFunctionReturnValue,
+		C3.Plugins.Text.Acts.SetOpacity,
 		C3.Plugins.sliderbar.Acts.SetVisible,
+		C3.Plugins.Button.Acts.SetVisible,
 		C3.Plugins.Touch.Cnds.OnTapGestureObject,
 		C3.Plugins.System.Acts.GoToLayoutByName,
 		C3.Plugins.sliderbar.Cnds.OnChanging,
@@ -91,7 +94,9 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.Browser.Acts.RequestFullScreen,
 		C3.Plugins.Browser.Acts.CancelFullScreen,
 		C3.Plugins.Button.Cnds.OnClicked,
-		C3.Plugins.System.Acts.ToggleBoolVar
+		C3.Plugins.System.Acts.ToggleBoolVar,
+		C3.Plugins.Browser.Cnds.IsInstallAvailable,
+		C3.Plugins.Browser.Acts.RequestInstall
 	];
 };
 self.C3_JsPropNameTable = [
@@ -104,12 +109,12 @@ self.C3_JsPropNameTable = [
 	{Tween: 0},
 	{Blade: 0},
 	{Luminosity: 0},
+	{DestroyOutsideLayout: 0},
 	{HalfObject: 0},
 	{Timer: 0},
 	{Juice_0: 0},
 	{BladeSmoother: 0},
 	{Fullscreen: 0},
-	{install: 0},
 	{InstructionsText: 0},
 	{GameManager: 0},
 	{NewY: 0},
@@ -130,6 +135,7 @@ self.C3_JsPropNameTable = [
 	{GameMode: 0},
 	{Browser: 0},
 	{lowperf: 0},
+	{Install: 0},
 	{Mode: 0},
 	{GameOn: 0},
 	{Strikeless: 0},
@@ -175,5 +181,6 @@ self.InstanceType = {
 	Fade: class extends self.ITiledBackgroundInstance {},
 	GameMode: class extends self.ISliderBarInstance {},
 	Browser: class extends self.IInstance {},
-	lowperf: class extends self.IButtonInstance {}
+	lowperf: class extends self.IButtonInstance {},
+	Install: class extends self.ITextInstance {}
 }
